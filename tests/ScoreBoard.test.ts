@@ -66,4 +66,19 @@ describe("ScoreBoard", () => {
       board.updateScore("Argentina", "Australia", 0, -2);
     }).toThrow();
   });
+
+  it("should remove a match from the scoreboard", () => {
+    const board = new ScoreBoard();
+    board.startMatch("Uruguay", "Italy");
+    expect(board.getSummary().length).toBe(1);
+    board.finishMatch("Uruguay", "Italy");
+    expect(board.getSummary().length).toBe(0);
+  });
+
+  it("should throw if trying to finish a non-existent match", () => {
+    const board = new ScoreBoard();
+    expect(() => {
+      board.finishMatch("Argentina", "Australia");
+    }).toThrow();
+  });
 });

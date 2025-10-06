@@ -1,3 +1,4 @@
+
 const { ScoreBoard } = require('../src/ScoreBoard');
 
 describe('ScoreBoard', () => {
@@ -10,5 +11,14 @@ describe('ScoreBoard', () => {
     expect(matches[0].awayTeam).toBe('Canada');
     expect(matches[0].homeScore).toBe(0);
     expect(matches[0].awayScore).toBe(0);
+  });
+  it('should not allow adding a duplicate match', () => {
+    const board = new ScoreBoard();
+    board.startMatch('Spain', 'Brazil');
+    expect(() => {
+      board.startMatch('Spain', 'Brazil');
+    }).toThrow();
+    const matches = board.getSummary();
+    expect(matches.length).toBe(1);
   });
 });

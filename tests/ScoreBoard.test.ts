@@ -81,4 +81,30 @@ describe("ScoreBoard", () => {
       board.finishMatch("Argentina", "Australia");
     }).toThrow();
   });
+
+    it('should return matches ordered by total score and recency', () => {
+    const board = new ScoreBoard();
+    board.startMatch('Mexico', 'Canada');
+    board.updateScore('Mexico', 'Canada', 0, 5);
+    board.startMatch('Spain', 'Brazil');
+    board.updateScore('Spain', 'Brazil', 10, 2);
+    board.startMatch('Germany', 'France');
+    board.updateScore('Germany', 'France', 2, 2);
+    board.startMatch('Uruguay', 'Italy');
+    board.updateScore('Uruguay', 'Italy', 6, 6);
+    board.startMatch('Argentina', 'Australia');
+    board.updateScore('Argentina', 'Australia', 3, 1);
+
+    const summary = board.getSummary();
+    expect(summary[0].homeTeam).toBe('Uruguay');
+    expect(summary[0].awayTeam).toBe('Italy');
+    expect(summary[1].homeTeam).toBe('Spain');
+    expect(summary[1].awayTeam).toBe('Brazil');
+    expect(summary[2].homeTeam).toBe('Mexico');
+    expect(summary[2].awayTeam).toBe('Canada');
+    expect(summary[3].homeTeam).toBe('Argentina');
+    expect(summary[3].awayTeam).toBe('Australia');
+    expect(summary[4].homeTeam).toBe('Germany');
+    expect(summary[4].awayTeam).toBe('France');
+  });
 });

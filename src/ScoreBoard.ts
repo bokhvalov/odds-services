@@ -3,10 +3,12 @@ export interface Match {
   awayTeam: string;
   homeScore: number;
   awayScore: number;
+  sequence: number; // Unique match order for recency instead of timestamp because of possibility of same-time matches
 }
 
 class ScoreBoard {
   private matches: Match[] = [];
+  private matchSequence = 0;
 
   startMatch(homeTeam: string, awayTeam: string): void {
     if (!homeTeam || !awayTeam) {
@@ -26,7 +28,10 @@ class ScoreBoard {
       awayTeam,
       homeScore: 0,
       awayScore: 0,
+      sequence: ++this.matchSequence,
     });
+
+    console.log("Match started:", homeTeam, "vs", awayTeam, "at", new Date().toLocaleString());
   }
 
   updateScore(
@@ -61,7 +66,15 @@ class ScoreBoard {
   }
 
   getSummary(): Match[] {
-    return this.matches;
+    return [...this.matches].sort((a, b) => {
+      const totalA = a.homeScore + a.awayScore;
+      const totalB = b.homeScore + b.awayScore;
+      if (totalA !== totalB) {
+        return totalB - totalA; // Descending by total score
+      }
+
+      return b.sequence - a.sequence;
+    });
   }
 }
 

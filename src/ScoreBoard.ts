@@ -6,48 +6,33 @@ export interface Match {
   sequence: number; // Unique match order for recency instead of timestamp because of possibility of same-time matches
 }
 
+const INITIAL_SCORE = 0;
+
 class ScoreBoard {
   private matches: Match[] = [];
   private matchSequence = 0;
 
   startMatch(homeTeam: string, awayTeam: string): void {
-    if (!homeTeam || !awayTeam) {
-      throw new Error("Team names must not be empty");
-    }
-    if (homeTeam === awayTeam) {
-      throw new Error("Teams must be different");
-    }
-    const exists = this.matches.some(
-      (m) => m.homeTeam === homeTeam && m.awayTeam === awayTeam
-    );
-    if (exists) {
-      throw new Error("Match already exists");
-    }
+    this.validateTeamNames(homeTeam, awayTeam);
+    this.ensureTeamsAreDifferent(homeTeam, awayTeam);
+    this.ensureMatchDoesNotExist(homeTeam, awayTeam);
+
     this.matches.push({
       homeTeam,
       awayTeam,
-      homeScore: 0,
-      awayScore: 0,
+      homeScore: INITIAL_SCORE,
+      awayScore: INITIAL_SCORE,
       sequence: ++this.matchSequence,
     });
 
     console.log("Match started:", homeTeam, "vs", awayTeam, "at", new Date().toLocaleString());
   }
 
-  updateScore(
-    homeTeam: string,
-    awayTeam: string,
-    homeScore: number,
-    awayScore: number
-  ): void {
-    if (homeScore < 0)
-      throw new Error("homeScore: score could not be negative");
-    if (awayScore < 0)
-      throw new Error("awayScore: score could not be negative");
+  updateScore(homeTeam: string, awayTeam: string, homeScore: number, awayScore: number): void {
+    this.validateScore(homeScore, "homeScore");
+    this.validateScore(awayScore, "awayScore");
 
-    const match = this.matches.find(
-      (match) => match.homeTeam === homeTeam && match.awayTeam === awayTeam
-    );
+    const match = this.findMatch(homeTeam, awayTeam);
 
     if (!match) throw new Error("Match does not exist");
 
@@ -56,13 +41,12 @@ class ScoreBoard {
   }
 
   finishMatch(homeTeam: string, awayTeam: string): void {
-    const index = this.matches.findIndex(
-      (m) => m.homeTeam === homeTeam && m.awayTeam === awayTeam
-    );
+    const index = this.findMatchIndex(homeTeam, awayTeam);
+
     if (index === -1) {
       throw new Error("Match does not exist");
     }
-    this.matches.splice(index, 1);// To Do - save match in archive + endTimeStamp, etc...
+    this.matches.splice(index, 1); // To Do - save match in archive + endTimeStamp, etc...
   }
 
   getSummary(): Match[] {
@@ -75,6 +59,39 @@ class ScoreBoard {
 
       return b.sequence - a.sequence;
     });
+  }
+
+  //private helpers
+  private validateTeamNames(homeTeam: string, awayTeam: string): void {
+    if (!homeTeam || !awayTeam) {
+      throw new Error("Team names must not be empty");
+    }
+  }
+
+  private ensureTeamsAreDifferent(homeTeam: string, awayTeam: string): void {
+    if (homeTeam === awayTeam) {
+      throw new Error("Teams must be different");
+    }
+  }
+
+  private ensureMatchDoesNotExist(homeTeam: string, awayTeam: string): void {
+    if (this.findMatch(homeTeam, awayTeam)) {
+      throw new Error("Match already exists");
+    }
+  }
+
+  private validateScore(score: number, field: string): void {
+    if (score < 0) {
+      throw new Error(`${field}: score could not be negative`);
+    }
+  }
+
+  private findMatch(homeTeam: string, awayTeam: string): Match | undefined {
+    return this.matches.find((match) => match.homeTeam === homeTeam && match.awayTeam === awayTeam);
+  }
+
+  private findMatchIndex(homeTeam: string, awayTeam: string): number {
+    return this.matches.findIndex((match) => match.homeTeam === homeTeam && match.awayTeam === awayTeam);
   }
 }
 
